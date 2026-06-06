@@ -1,0 +1,22 @@
+# Default behavior
+* text=auto
+
+# Unreal Engine binary assets — never diff/merge
+*.uasset binary
+*.umap binary
+*.upk binary
+*.udk binary
+*.pak binary
+*.ubulk binary
+*.utoc binary
+*.ucas binary
+
+# Ensure scripts use LF
+*.sh text eol=lf
+*.bat text eol=crlf
+
+# Source files — Windows CRLF
+*.cpp text eol=crlf
+*.h text eol=crlf
+*.cs text eol=crlf
+*.ini text eol=crlf

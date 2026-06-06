@@ -1,0 +1,51 @@
+# ============================================================
+# Unreal Engine
+# ============================================================
+
+# Build output
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# Compiled source
+*.pdb
+*.lib
+*.exp
+*.dll
+
+# Project files (generated)
+*.sln
+*.suo
+*.VC.db
+*.VC.VC.opendb
+*.opensdf
+*.sdf
+
+# IDE
+.vs/
+.idea/
+*.user
+
+# Pak files (large binary assets)
+*.pak
+*.ucas
+*.utoc
+
+# Crash dumps
+*.dmp
+*.log
+
+# ============================================================
+# Claude Code
+# ============================================================
+
+.claude/
+
+# ============================================================
+# OS
+# ============================================================
+.DS_Store
+Thumbs.db
+desktop.ini
