@@ -68,6 +68,7 @@ void AMeleeCharacterBase::OnDeath_Implementation()
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCharacterMovement()->DisableMovement();
 	BodyMesh->SetHiddenInGame(true);
+	WeaponMesh->SetHiddenInGame(true);
 }
 
 void AMeleeCharacterBase::HandleDeath()
