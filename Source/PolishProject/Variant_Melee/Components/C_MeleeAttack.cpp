@@ -20,8 +20,8 @@ void UC_MeleeAttack::SetHitBox(UBoxComponent* Box)
 
 void UC_MeleeAttack::TriggerAttack()
 {
-	if (!bCanAttack || !HitBox) return;
-
+	if (!CanAttack()) return;
+	
 	bCanAttack = false;
 	HitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 

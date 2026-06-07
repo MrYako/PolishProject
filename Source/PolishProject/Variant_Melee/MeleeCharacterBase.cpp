@@ -54,6 +54,7 @@ void AMeleeCharacterBase::ReceiveDamage(float Amount, AActor* DamageCauser)
 
 void AMeleeCharacterBase::PerformAttack()
 {
+	if (!AttackComponent->CanAttack()) return;
 	PlayAttackAnimation();
 	AttackComponent->TriggerAttack();
 }

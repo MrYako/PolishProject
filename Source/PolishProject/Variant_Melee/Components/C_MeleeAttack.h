@@ -27,6 +27,8 @@ public:
 	void TriggerAttack();
 
 	void SetHitBox(UBoxComponent* Box);
+	
+	bool CanAttack() const { return bCanAttack && HitBox; }
 
 	UPROPERTY(BlueprintAssignable)
 	FOnMeleeHit OnHit;
