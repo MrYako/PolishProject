@@ -8,6 +8,7 @@
 
 AMeleeHero::AMeleeHero()
 {
+	bUseControllerRotationYaw = true;
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->SetUsingAbsoluteRotation(true);
