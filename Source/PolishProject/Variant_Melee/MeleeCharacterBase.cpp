@@ -20,7 +20,6 @@ AMeleeCharacterBase::AMeleeCharacterBase()
 
 	HitBox = CreateDefaultSubobject<UBoxComponent>(TEXT("HitBox"));
 	HitBox->SetupAttachment(AttackComponent);
-	HitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMesh->SetupAttachment(AttackComponent);
@@ -32,7 +31,7 @@ AMeleeCharacterBase::AMeleeCharacterBase()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 640.f, 0.f);
 	GetCharacterMovement()->bConstrainToPlane = true;
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
@@ -91,4 +90,5 @@ void AMeleeCharacterBase::PostInitProperties()
 {
 	Super::PostInitProperties();
 	HitBox->SetCollisionProfileName(TEXT("Trigger"));
+	HitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
