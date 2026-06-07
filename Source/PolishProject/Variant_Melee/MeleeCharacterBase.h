@@ -65,4 +65,6 @@ protected:
 
 	UFUNCTION()
 	void HandleDamageReceived(float Damage, AActor* DamageInstigator);
+	
+	void PostInitProperties() override;
 };

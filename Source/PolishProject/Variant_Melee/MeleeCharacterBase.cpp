@@ -1,4 +1,5 @@
 #include "MeleeCharacterBase.h"
+#include "DrawDebugHelpers.h"
 #include "Components/C_HealthComponent.h"
 #include "Components/C_MeleeAttack.h"
 #include "Components/BoxComponent.h"
@@ -61,7 +62,11 @@ void AMeleeCharacterBase::PerformAttack()
 
 void AMeleeCharacterBase::ApplyKnockback(FVector Direction, float Strength)
 {
-	LaunchCharacter(Direction.GetSafeNormal() * Strength, true, true);
+	const FVector Start = GetActorLocation();
+	const FVector End = Start + Direction.GetSafeNormal() * 1000.f;
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.f, 0, 5.f);
+
+	LaunchCharacter(Direction.GetSafeNormal() * Strength, true, false);
 }
 
 void AMeleeCharacterBase::OnDeath_Implementation()
@@ -80,4 +85,10 @@ void AMeleeCharacterBase::HandleDeath()
 void AMeleeCharacterBase::HandleDamageReceived(float Damage, AActor* DamageInstigator)
 {
 	OnDamageReceived(Damage, DamageInstigator);
+}
+
+void AMeleeCharacterBase::PostInitProperties()
+{
+	Super::PostInitProperties();
+	HitBox->SetCollisionProfileName(TEXT("Trigger"));
 }
