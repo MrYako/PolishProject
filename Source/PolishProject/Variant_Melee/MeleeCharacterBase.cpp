@@ -61,10 +61,6 @@ void AMeleeCharacterBase::PerformAttack()
 
 void AMeleeCharacterBase::ApplyKnockback(FVector Direction, float Strength)
 {
-	const FVector Start = GetActorLocation();
-	const FVector End = Start + Direction.GetSafeNormal() * 1000.f;
-	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.f, 0, 5.f);
-
 	LaunchCharacter(Direction.GetSafeNormal() * Strength, true, false);
 }
 
