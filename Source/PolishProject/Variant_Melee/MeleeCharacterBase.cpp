@@ -6,6 +6,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Engine/Engine.h"
 
 AMeleeCharacterBase::AMeleeCharacterBase()
 {
@@ -49,12 +50,25 @@ void AMeleeCharacterBase::BeginPlay()
 
 void AMeleeCharacterBase::ReceiveDamage(float Amount, AActor* DamageCauser)
 {
+	if (GEngine)
+	{
+		FString CauserName = DamageCauser ? DamageCauser->GetName() : TEXT("None");
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
+			FString::Printf(TEXT("[%s] Damage %.1f | Causer: %s"), *GetName(), Amount, *CauserName));
+	}
 	HealthComponent->ApplyDamage(Amount, DamageCauser);
 }
 
 void AMeleeCharacterBase::PerformAttack()
 {
-	if (!AttackComponent->CanAttack()) return;
+	const bool bCanAttack = AttackComponent->CanAttack();
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, bCanAttack ? FColor::Green : FColor::Red,
+			FString::Printf(TEXT("[%s] CanAttack: %s"), *GetName(), bCanAttack ? TEXT("YES") : TEXT("NO")));
+	}
+	if (!bCanAttack) return;
+
 	PlayAttackAnimation();
 	AttackComponent->TriggerAttack();
 }
