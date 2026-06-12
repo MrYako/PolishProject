@@ -2,12 +2,19 @@
 #include "Components/C_MeleeAttack.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PlayerController.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 
 AMeleeHero::AMeleeHero()
 {
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = false;
+
 	bUseControllerRotationYaw = true;
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -15,11 +22,58 @@ AMeleeHero::AMeleeHero()
 	CameraBoom->TargetArmLength = 800.f;
 	CameraBoom->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
 	CameraBoom->bDoCollisionTest = false;
+	CameraBoom->bEnableCameraLag = true;
+	CameraBoom->CameraLagSpeed = 5.f;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false;
 
+}
+
+void AMeleeHero::OnDeath_Implementation()
+{
+	Super::OnDeath_Implementation();
+
+	const FVector Current = GetActorLocation();
+	const FVector Target(GlideTargetLocation.X, GlideTargetLocation.Y, Current.Z);
+	GlideSpeed = FVector::Dist2D(Current, Target) / FMath::Max(GlideDuration, KINDA_SMALL_NUMBER);
+
+	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+		PC->DisableInput(PC);
+
+	SetActorTickEnabled(true);
+}
+
+void AMeleeHero::ResetCharacter()
+{
+	Super::ResetCharacter(); // health, collision enabled, MOVE_Walking, meshes visible
+
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
+
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+		PC->EnableInput(PC);
+
+	SetActorTickEnabled(false);
+}
+
+void AMeleeHero::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (!GetCharacterMovement()->IsFlying()) return;
+	UpdateDeathGlide(DeltaTime);
+}
+
+void AMeleeHero::UpdateDeathGlide(float DeltaTime)
+{
+	const FVector Current = GetActorLocation();
+	const FVector Target(GlideTargetLocation.X, GlideTargetLocation.Y, Current.Z);
+	if (FVector::DistSquared2D(Current, Target) < 1.f) return;
+
+	SetActorLocation(FMath::VInterpConstantTo(Current, Target, DeltaTime, GlideSpeed));
 }
 
 void AMeleeHero::BeginPlay()
@@ -42,7 +96,7 @@ void AMeleeHero::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMeleeHero::Move);
-		EIC->BindAction(AttackAction, ETriggerEvent::Started, this, &AMeleeHero::Attack);
+		EIC->BindAction(AttackAction, ETriggerEvent::Started, this, &AMeleeHero::PerformAttack_Implementation);
 	}
 }
 
@@ -57,9 +111,4 @@ void AMeleeHero::Move(const FInputActionValue& Value)
 
 	AddMovementInput(Forward, Axis.Y);
 	AddMovementInput(Right,   Axis.X);
-}
-
-void AMeleeHero::Attack()
-{
-	PerformAttack();
 }
