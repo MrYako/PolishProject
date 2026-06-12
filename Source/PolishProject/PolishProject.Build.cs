@@ -27,14 +27,7 @@ public class PolishProject : ModuleRules
 
 		PublicIncludePaths.AddRange(new string[] {
 			"PolishProject",
-			"PolishProject/Variant_Strategy",
-			"PolishProject/Variant_Strategy/UI",
-			"PolishProject/Variant_TwinStick",
-			"PolishProject/Variant_TwinStick/AI",
-			"PolishProject/Variant_TwinStick/Gameplay",
-			"PolishProject/Variant_TwinStick/UI",
 			"PolishProject/Variant_Melee",
-			"PolishProject/Variant_Melee/Components"
 		});
 
 		// Uncomment if you are using Slate UI
