@@ -11,7 +11,7 @@
 AMeleeCharacterBase::AMeleeCharacterBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
-
+	
 	BodyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BodyMesh"));
 	BodyMesh->SetupAttachment(GetCapsuleComponent());
 	BodyMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -59,7 +59,7 @@ void AMeleeCharacterBase::ReceiveDamage(float Amount, AActor* DamageCauser)
 	HealthComponent->ApplyDamage(Amount, DamageCauser);
 }
 
-void AMeleeCharacterBase::PerformAttack()
+void AMeleeCharacterBase::PerformAttack_Implementation()
 {
 	const bool bCanAttack = AttackComponent->CanAttack();
 	if (GEngine)
@@ -86,9 +86,27 @@ void AMeleeCharacterBase::OnDeath_Implementation()
 	WeaponMesh->SetHiddenInGame(true);
 }
 
+void AMeleeCharacterBase::Disable() const
+{
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCharacterMovement()->DisableMovement();
+	BodyMesh->SetHiddenInGame(true);
+	WeaponMesh->SetHiddenInGame(true);
+}
+
+void AMeleeCharacterBase::ResetCharacter()
+{
+	HealthComponent->Reset();
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	BodyMesh->SetHiddenInGame(false);
+	WeaponMesh->SetHiddenInGame(false);
+}
+
 void AMeleeCharacterBase::HandleDeath()
 {
 	OnDeath();
+	OnCharacterDied.Broadcast(this);
 }
 
 void AMeleeCharacterBase::HandleDamageReceived(float Damage, AActor* DamageInstigator)

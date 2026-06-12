@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Interfaces/CombatantInterface.h"
 #include "MeleeCharacterBase.generated.h"
 
 class UC_HealthComponent;
@@ -9,29 +10,43 @@ class UC_MeleeAttack;
 class UBoxComponent;
 class UStaticMeshComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMeleeCharacterDied, AMeleeCharacterBase*, Character);
+
 UCLASS(abstract)
-class POLISHPROJECT_API AMeleeCharacterBase : public ACharacter
+class POLISHPROJECT_API AMeleeCharacterBase : public ACharacter, public ICombatantInterface
 {
 	GENERATED_BODY()
 
 public:
 
 	AMeleeCharacterBase();
+	
+	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable, Category="Combat")
 	void ReceiveDamage(float Amount, AActor* DamageCauser);
 
-	UFUNCTION(BlueprintCallable, Category="Combat")
-	void PerformAttack();
+	/** ICombatantInterface */
+	virtual void PerformAttack_Implementation() override;
 
 	/** Launches the character in Direction with Strength. Used for hit knockback. */
 	UFUNCTION(BlueprintCallable, Category="Combat")
 	void ApplyKnockback(FVector Direction, float Strength);
 
+	/** Hides the character and disables its collision and movement. */
+	void Disable() const;
+
+	/** Reverses OnDeath: restores health, re-enables collision/movement/meshes, restarts BT. */
+	virtual void ResetCharacter();
+
+	UPROPERTY(BlueprintAssignable, Category="Combat")
+	FOnMeleeCharacterDied OnCharacterDied;
+
+	UFUNCTION(BlueprintPure, Category="Components")
+	UC_HealthComponent* GetHealthComponent() const { return HealthComponent; }
+
 protected:
-
-	virtual void BeginPlay() override;
-
+	
 	/** C++ default: disables collision and stops movement. Override in BP to play death anim/effects. */
 	UFUNCTION(BlueprintNativeEvent, Category="Combat")
 	void OnDeath();
@@ -65,6 +80,6 @@ protected:
 
 	UFUNCTION()
 	void HandleDamageReceived(float Damage, AActor* DamageInstigator);
-	
-	void PostInitProperties() override;
+
+	virtual void PostInitProperties() override;
 };
