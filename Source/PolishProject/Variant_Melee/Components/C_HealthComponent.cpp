@@ -28,3 +28,8 @@ float UC_HealthComponent::GetHealthPercent() const
 {
 	return MaxHealth > 0.f ? CurrentHealth / MaxHealth : 0.f;
 }
+
+void UC_HealthComponent::Reset()
+{
+	CurrentHealth = MaxHealth;
+}

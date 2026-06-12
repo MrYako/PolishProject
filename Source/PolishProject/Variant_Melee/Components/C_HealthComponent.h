@@ -28,6 +28,8 @@ public:
 	UFUNCTION(BlueprintPure, Category="Health")
 	bool IsAlive() const { return CurrentHealth > 0.f; }
 
+	void Reset();
+
 	UPROPERTY(BlueprintAssignable)
 	FOnDamageReceived OnDamageReceived;
 
