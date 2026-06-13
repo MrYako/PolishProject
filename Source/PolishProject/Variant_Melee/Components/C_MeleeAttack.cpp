@@ -43,13 +43,6 @@ void UC_MeleeAttack::OnHitBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 	bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (GEngine)
-	{
-		FString CauserName = GetOwner() ? GetOwner()->GetName() : TEXT("None");
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
-			FString::Printf(TEXT("[%s] | Causer: %s"), *OverlappedComp->GetName(), *CauserName));
-	}
-	
 	AMeleeCharacterBase* Target = Cast<AMeleeCharacterBase>(OtherActor);
 	if (!Target || Target == GetOwner()) return;
 	if (HitActorsThisSwing.Contains(OtherActor)) return;
