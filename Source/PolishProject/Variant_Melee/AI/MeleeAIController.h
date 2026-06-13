@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "BehaviorTree/BehaviorTree.h"
 #include "MeleeAIController.generated.h"
 
 class AMeleeCharacterBase;
@@ -16,8 +17,14 @@ public:
 	static const FName BBKey_SelfActor;
 	static const FName BBKey_PlayerPawn;
 
+	UFUNCTION()
 	void Deactivate();
+
+	UFUNCTION()
 	void Reactivate();
+
+	UPROPERTY(EditDefaultsOnly, Category="AI")
+	TObjectPtr<UBehaviorTree> BehaviorTreeAsset;
 
 protected:
 

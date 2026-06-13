@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/CombatantInterface.h"
+#include "Components/C_KnockbackComponent.h"
 #include "MeleeCharacterBase.generated.h"
 
 class UC_HealthComponent;
@@ -20,7 +21,7 @@ class POLISHPROJECT_API AMeleeCharacterBase : public ACharacter, public ICombata
 public:
 
 	AMeleeCharacterBase();
-	
+
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable, Category="Combat")
@@ -29,34 +30,9 @@ public:
 	/** ICombatantInterface */
 	virtual void PerformAttack_Implementation() override;
 
+	/** Thin wrapper — delegates to KnockbackComponent->Apply(). */
 	UFUNCTION(BlueprintCallable, Category="Combat")
 	void ApplyKnockback(FVector Direction, int32 ChainDepth = 0);
-
-	virtual void Tick(float DeltaTime) override;
-
-	/** Distance this character travels when knocked back (primary hit). */
-	UPROPERTY(EditAnywhere, Category="Combat|Knockback", meta=(ClampMin="0", Units="cm"))
-	float KnockbackDistance = 150.f;
-
-	/** Time (seconds) to travel KnockbackDistance. Controls apparent speed. */
-	UPROPERTY(EditAnywhere, Category="Combat|Knockback", meta=(ClampMin="0.01", Units="s"))
-	float KnockbackDuration = 0.25f;
-
-	/** Pause before BT restarts after knockback travel completes. */
-	UPROPERTY(EditAnywhere, Category="Combat|Knockback", meta=(ClampMin="0", Units="s"))
-	float KnockbackRecoveryTime = 0.10f;
-
-	/** Max chain levels. 0 = no chain. 1 = one neighbor push. */
-	UPROPERTY(EditAnywhere, Category="Combat|Knockback", meta=(ClampMin="0", ClampMax="3"))
-	int32 MaxKnockbackChainDepth = 1;
-
-	/** Distance for secondary (chain) pushes. */
-	UPROPERTY(EditAnywhere, Category="Combat|Knockback", meta=(ClampMin="0", Units="cm"))
-	float ChainPushDistance = 60.f;
-
-	/** Time to travel ChainPushDistance. */
-	UPROPERTY(EditAnywhere, Category="Combat|Knockback", meta=(ClampMin="0.01", Units="s"))
-	float ChainPushDuration = 0.12f;
 
 	/** Hides the character and disables its collision and movement. */
 	void Disable() const;
@@ -70,8 +46,11 @@ public:
 	UFUNCTION(BlueprintPure, Category="Components")
 	UC_HealthComponent* GetHealthComponent() const { return HealthComponent; }
 
+	UFUNCTION(BlueprintPure, Category="Components")
+	UC_KnockbackComponent* GetKnockbackComponent() const { return KnockbackComponent; }
+
 protected:
-	
+
 	/** C++ default: disables collision and stops movement. Override in BP to play death anim/effects. */
 	UFUNCTION(BlueprintNativeEvent, Category="Combat")
 	void OnDeath();
@@ -100,27 +79,14 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	TObjectPtr<UC_HealthComponent> HealthComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UC_KnockbackComponent> KnockbackComponent;
+
 	UFUNCTION()
 	void HandleDeath();
 
 	UFUNCTION()
 	void HandleDamageReceived(float Damage, AActor* DamageInstigator);
 
-	UFUNCTION()
-	void HandleCapsuleHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
 	virtual void PostInitProperties() override;
-
-private:
-
-	bool bIsKnockedBack = false;
-	int32 CurrentKnockbackChainDepth = 0;
-	FVector KnockbackStartPos = FVector::ZeroVector;
-	FVector KnockbackTargetPos = FVector::ZeroVector;
-	float KnockbackElapsed = 0.f;
-	float KnockbackActiveDuration = 0.f;
-	FTimerHandle KnockbackRecoveryTimer;
-
-	void EndKnockback();
 };
