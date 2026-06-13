@@ -40,8 +40,10 @@ private:
 	UPROPERTY(EditAnywhere, Category="Combat", meta=(ClampMin=0))
 	float AttackDamage = 25.f;
 
-	UPROPERTY(EditAnywhere, Category="Combat", meta=(ClampMin=0, Units="cm/s"))
-	float KnockbackStrength = 500.f;
+	/** 0 = push purely away from attacker. 1 = push purely perpendicular to swing arc.
+	    0.4 gives a natural fan when hitting multiple enemies. */
+	UPROPERTY(EditAnywhere, Category="Combat", meta=(ClampMin=0, ClampMax=1))
+	float KnockbackFanBlend = 0.4f;
 
 	UPROPERTY(EditAnywhere, Category="Combat", meta=(ClampMin=0, Units="s"))
 	float HitBoxActiveDuration = 0.3f;
@@ -51,6 +53,7 @@ private:
 
 	bool bCanAttack = true;
 	FTimerHandle CooldownTimer;
+	TSet<TObjectPtr<AActor>> HitActorsThisSwing;
 
 	void EndAttack();
 

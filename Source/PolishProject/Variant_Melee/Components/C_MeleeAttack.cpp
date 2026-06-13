@@ -23,6 +23,7 @@ void UC_MeleeAttack::TriggerAttack()
 	if (!CanAttack()) return;
 	
 	bCanAttack = false;
+	HitActorsThisSwing.Empty();
 	HitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
 	GetWorld()->GetTimerManager().SetTimer(CooldownTimer, this, &UC_MeleeAttack::EndAttack, HitBoxActiveDuration, false);
@@ -42,13 +43,39 @@ void UC_MeleeAttack::OnHitBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 	bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (GEngine)
+	{
+		FString CauserName = GetOwner() ? GetOwner()->GetName() : TEXT("None");
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
+			FString::Printf(TEXT("[%s] | Causer: %s"), *OverlappedComp->GetName(), *CauserName));
+	}
+	
 	AMeleeCharacterBase* Target = Cast<AMeleeCharacterBase>(OtherActor);
 	if (!Target || Target == GetOwner()) return;
+	if (HitActorsThisSwing.Contains(OtherActor)) return;
 
-	const FVector KnockbackDir = (OtherActor->GetActorLocation() - GetOwner()->GetActorLocation()).GetSafeNormal();
+	HitActorsThisSwing.Add(OtherActor);
+
+	const FVector OwnerForward = GetOwner()->GetActorForwardVector();
+	const FVector SweepRight = FVector::CrossProduct(OwnerForward, FVector::UpVector).GetSafeNormal();
+
+	const FVector AwayDir = (OtherActor->GetActorLocation() - GetOwner()->GetActorLocation()).GetSafeNormal();
+	const float SideSign = FVector::DotProduct(SweepRight, AwayDir);
+
+	FVector KnockbackDir;
+	if (FMath::Abs(SideSign) < 0.1f)
+	{
+		// Enemy is directly in front — no lateral fan component
+		KnockbackDir = AwayDir;
+	}
+	else
+	{
+		const FVector FanComponent = SweepRight * FMath::Sign(SideSign);
+		KnockbackDir = FMath::Lerp(AwayDir, FanComponent, KnockbackFanBlend).GetSafeNormal();
+	}
 
 	Target->ReceiveDamage(AttackDamage, GetOwner());
-	Target->ApplyKnockback(KnockbackDir, KnockbackStrength);
+	Target->ApplyKnockback(KnockbackDir);
 
 	OnHit.Broadcast(OtherActor);
 }

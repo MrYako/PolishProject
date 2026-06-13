@@ -29,9 +29,34 @@ public:
 	/** ICombatantInterface */
 	virtual void PerformAttack_Implementation() override;
 
-	/** Launches the character in Direction with Strength. Used for hit knockback. */
 	UFUNCTION(BlueprintCallable, Category="Combat")
-	void ApplyKnockback(FVector Direction, float Strength);
+	void ApplyKnockback(FVector Direction, int32 ChainDepth = 0);
+
+	virtual void Tick(float DeltaTime) override;
+
+	/** Distance this character travels when knocked back (primary hit). */
+	UPROPERTY(EditAnywhere, Category="Combat|Knockback", meta=(ClampMin="0", Units="cm"))
+	float KnockbackDistance = 150.f;
+
+	/** Time (seconds) to travel KnockbackDistance. Controls apparent speed. */
+	UPROPERTY(EditAnywhere, Category="Combat|Knockback", meta=(ClampMin="0.01", Units="s"))
+	float KnockbackDuration = 0.25f;
+
+	/** Pause before BT restarts after knockback travel completes. */
+	UPROPERTY(EditAnywhere, Category="Combat|Knockback", meta=(ClampMin="0", Units="s"))
+	float KnockbackRecoveryTime = 0.10f;
+
+	/** Max chain levels. 0 = no chain. 1 = one neighbor push. */
+	UPROPERTY(EditAnywhere, Category="Combat|Knockback", meta=(ClampMin="0", ClampMax="3"))
+	int32 MaxKnockbackChainDepth = 1;
+
+	/** Distance for secondary (chain) pushes. */
+	UPROPERTY(EditAnywhere, Category="Combat|Knockback", meta=(ClampMin="0", Units="cm"))
+	float ChainPushDistance = 60.f;
+
+	/** Time to travel ChainPushDistance. */
+	UPROPERTY(EditAnywhere, Category="Combat|Knockback", meta=(ClampMin="0.01", Units="s"))
+	float ChainPushDuration = 0.12f;
 
 	/** Hides the character and disables its collision and movement. */
 	void Disable() const;
@@ -81,5 +106,21 @@ protected:
 	UFUNCTION()
 	void HandleDamageReceived(float Damage, AActor* DamageInstigator);
 
+	UFUNCTION()
+	void HandleCapsuleHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
 	virtual void PostInitProperties() override;
+
+private:
+
+	bool bIsKnockedBack = false;
+	int32 CurrentKnockbackChainDepth = 0;
+	FVector KnockbackStartPos = FVector::ZeroVector;
+	FVector KnockbackTargetPos = FVector::ZeroVector;
+	float KnockbackElapsed = 0.f;
+	float KnockbackActiveDuration = 0.f;
+	FTimerHandle KnockbackRecoveryTimer;
+
+	void EndKnockback();
 };
